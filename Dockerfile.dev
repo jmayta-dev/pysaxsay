@@ -1,0 +1,48 @@
+# syntax=docker/dockerfile:1
+FROM python:alpine3.21
+
+# actualizar pip
+RUN pip install --upgrade pip
+# variables de entorno
+ENV DJANGO_SETTINGS_MODULE='config.settings.local'
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONNUNBUFFERED=1
+
+# // -> ODBC Driver
+ENV ACCEPT_EULA=Y
+ENV PATH="/opt/mssql-tools18/bin:$PATH"
+# dependencias necesarias (alpine)
+RUN apk add --no-cache \
+    curl \
+    bash \
+    g++ \
+    gcc \
+    libc-dev \
+    make \
+    unixodbc \
+    unixodbc-dev \
+    libffi-dev \
+    openssl-dev \
+    gnupg
+# descargar de acuerdo a arquitectura actual
+RUN case $(uname -m) in \
+    x86_64) architecture="amd64" ;; \
+    arm64)  architecture="arm64" ;; \
+    *) architecture="unsupported" ;; \
+    esac && \
+    if [[ "unsupported" == "$architecture" ]]; then \
+    echo "La arquitectura $(uname -m) no es compatible."; exit 1; \
+    fi && \
+    curl -O https://download.microsoft.com/download/7/6/d/76de322a-d860-4894-9945-f0cc5d6a45f8/msodbcsql18_18.4.1.1-1_${architecture}.apk && \
+    curl -O https://download.microsoft.com/download/7/6/d/76de322a-d860-4894-9945-f0cc5d6a45f8/mssql-tools18_18.4.1.1-1_${architecture}.apk && \
+    apk add --allow-untrusted msodbcsql18_18.4.1.1-1_${architecture}.apk && \
+    apk add --allow-untrusted mssql-tools18_18.4.1.1-1_${architecture}.apk && \
+    rm -f msodbcsql18_18.4.1.1-1_${architecture}.apk mssql-tools18_18.4.1.1-1_${architecture}.apk
+# // <- ODBC Driver
+
+# ruta de trabajo
+WORKDIR /pysaxsay
+# copiar dependencias a ruta de trabajo
+COPY requirements/ ./
+# instalar dependencias
+RUN pip install --no-cache-dir -r local.txt
