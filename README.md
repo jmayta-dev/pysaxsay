@@ -3,8 +3,7 @@
 Complemento de proyecto SAXSAY (.NET) para procesos que exploten las cualidades de `python` (ejm: automatización y análisis de datos).
 
 
----
-### Errores Identificados (podman)
+### 🚨 Errores Identificados (podman)
 
 Si usa containerización con Docker probablemente no tenga los inconvenientes detallados a continuación. Esto problemas aparecen al usar Podman como gestor de containers.
 
